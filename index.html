@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🏋️ متتبع النادي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0b0e14; --card: #161b26; --card-2: #1c2230; --border: #262d3d;
+    --text: #e9ecf5; --muted: #8b93a7;
+    --green: #22c55e; --green-ink: #4ade80; --green-soft: rgba(34,197,94,.16);
+    --red: #ef4444; --red-ink: #f87171; --red-soft: rgba(239,68,68,.16);
+    --accent: #6366f1; --track: #232a38;
+    --shadow: 0 8px 30px rgba(0,0,0,.35);
+  }
+  [data-theme="light"] {
+    --bg: #f4f6fb; --card: #ffffff; --card-2: #f2f4fa; --border: #e3e7f0;
+    --text: #131722; --muted: #6b7488;
+    --green: #16a34a; --green-ink: #15803d; --green-soft: rgba(22,163,74,.12);
+    --red: #dc2626; --red-ink: #b91c1c; --red-soft: rgba(220,38,38,.12);
+    --track: #e6e9f2; --shadow: 0 8px 30px rgba(20,30,60,.08);
+  }
+
+  body {
+    font-family: 'Tajawal', system-ui, -apple-system, sans-serif;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(99,102,241,.18), transparent 45%),
+      radial-gradient(circle at 85% 0%, rgba(34,197,94,.10), transparent 40%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 22px 16px 90px;
+    transition: background .3s, color .3s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .wrap { max-width: 1120px; margin: 0 auto; }
+
+  /* HEADER */
+  header.top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 22px;
+  }
+  header.top h1 { font-size: 26px; font-weight: 800; letter-spacing: -.3px; }
+  header.top .sub { color: var(--muted); font-size: 14px; margin-top: 6px; font-weight: 500; }
+  header.top .sub b { color: var(--accent); font-weight: 700; }
+
+  .actions { display: flex; gap: 8px; }
+  .icon-btn {
+    width: 42px; height: 42px; border-radius: 12px;
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); font-size: 17px; cursor: pointer;
+    display: grid; place-items: center; transition: .18s ease; font-family: inherit;
+  }
+  .icon-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .icon-btn:active { transform: scale(.94); }
+  .icon-btn.danger:hover { border-color: var(--red); }
+
+  /* DASHBOARD */
+  .dash { display: grid; grid-template-columns: 220px 1fr; gap: 16px; margin-bottom: 34px; }
+  @media (max-width: 760px) { .dash { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 18px; box-shadow: var(--shadow);
+  }
+
+  .ring-wrap { display: grid; place-items: center; }
+  .ring {
+    --p: 0%;
+    width: 158px; height: 158px; border-radius: 50%;
+    background: conic-gradient(var(--green) 0 var(--p), var(--track) var(--p) 100%);
+    display: grid; place-items: center; transition: background .45s ease;
+  }
+  .ring-inner {
+    width: 122px; height: 122px; border-radius: 50%; background: var(--card);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  }
+  .ring-val { font-size: 30px; font-weight: 800; letter-spacing: -1px; }
+  .ring-lbl { font-size: 12px; color: var(--muted); }
+
+  .stat-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+    gap: 10px; margin-bottom: 12px;
+  }
+  .stat {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 12px 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    transition: .2s ease;
+  }
+  .stat:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .stat .s-ico { font-size: 17px; }
+  .stat b { font-size: 22px; font-weight: 800; line-height: 1.1; }
+  .stat span.lbl { font-size: 11.5px; color: var(--muted); }
+  .stat.green b { color: var(--green-ink); }
+  .stat.red b { color: var(--red-ink); }
+
+  .progress-card { padding: 16px 18px; }
+  .pc-head {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; color: var(--muted); margin-bottom: 10px;
+  }
+  .pc-head b { color: var(--text); font-size: 14px; }
+  .bar {
+    height: 12px; border-radius: 99px; background: var(--track);
+    overflow: hidden; display: flex; width: 100%;
+  }
+  .bar .seg { height: 100%; transition: width .5s cubic-bezier(.4,0,.2,1); }
+  .bar .seg.done { background: linear-gradient(90deg, #16a34a, #22c55e); }
+  .bar .seg.miss { background: linear-gradient(90deg, #dc2626, #ef4444); }
+  .bar.small { height: 7px; flex: 1; }
+  .bar.small .seg.done { background: var(--green); }
+
+  /* MONTHS */
+  .month { margin-bottom: 34px; }
+  .month-head {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .month-head h2 { font-size: 19px; font-weight: 800; }
+  .month-head .m-prog {
+    display: flex; align-items: center; gap: 10px;
+    flex: 1; min-width: 140px; max-width: 320px;
+  }
+  .month-head .m-txt { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+  .weeks {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+  }
+
+  .week {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 18px; padding: 12px; transition: .2s ease;
+  }
+  .week:hover { border-color: rgba(99,102,241,.5); }
+
+  .week-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px; padding: 0 2px;
+  }
+  .wk-title { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .wk-stat {
+    font-size: 11.5px; font-weight: 700;
+    padding: 3px 9px; border-radius: 99px;
+    background: var(--card-2); color: var(--muted);
+  }
+  .wk-stat.full { background: var(--green-soft); color: var(--green-ink); }
+
+  .days { display: flex; gap: 8px; }
+
+  .day {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 14px 6px 10px;
+    border-radius: 14px;
+    border: 1.5px dashed var(--border);
+    background: var(--card-2);
+    color: var(--muted);
+    cursor: pointer; font-family: inherit;
+    transition: transform .16s ease, background .2s, border-color .2s, color .2s;
+    position: relative;
+    min-height: 70px;
+  }
+  .day:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .day:active { transform: scale(.95); }
+
+  .day .day-check {
+    position: absolute; top: 5px; left: 8px;
+    font-size: 14px; font-weight: 900; line-height: 1;
+    opacity: .9;
+  }
+  .day .day-name { font-size: 12.5px; font-weight: 700; }
+  .day .day-date { font-size: 10px; opacity: .75; }
+
+  .day.done {
+    background: var(--green-soft);
+    border: 1.5px solid var(--green);
+    color: var(--green-ink);
+  }
+  .day.miss {
+    background: var(--red-soft);
+    border: 1.5px solid var(--red);
+    color: var(--red-ink);
+  }
+  .day.today { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @keyframes flashPulse {
+    0%, 100% { outline: 0 solid transparent; }
+    50% { outline: 5px solid rgba(99,102,241,.6); outline-offset: 3px; }
+  }
+  .day.flash { animation: flashPulse 1.4s ease 2; }
+
+  /* MISC */
+  .legend {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    justify-content: center; color: var(--muted);
+    font-size: 12.5px; margin-top: 12px;
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 12px; height: 12px; border-radius: 4px; border: 1.5px solid; }
+  .dot.g { background: var(--green-soft); border-color: var(--green); }
+  .dot.r { background: var(--red-soft); border-color: var(--red); }
+  .dot.n { background: var(--card-2); border-color: var(--border); border-style: dashed; }
+
+  .fab {
+    position: fixed; bottom: 22px; left: 22px;
+    background: var(--accent); color: #fff; border: none;
+    padding: 13px 20px; border-radius: 99px;
+    font-family: inherit; font-size: 14px; font-weight: 700;
+    cursor: pointer; box-shadow: 0 10px 25px rgba(99,102,241,.4);
+    display: flex; align-items: center; gap: 8px;
+    transition: .2s ease; z-index: 50;
+  }
+  .fab:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(99,102,241,.55); }
+  .fab:active { transform: scale(.95); }
+
+  #toast {
+    position: fixed; bottom: 26px; right: 26px;
+    background: var(--card); color: var(--text);
+    border: 1px solid var(--border); border-radius: 14px;
+    padding: 11px 18px; font-size: 13.5px; font-weight: 700;
+    box-shadow: var(--shadow);
+    opacity: 0; transform: translateY(14px); pointer-events: none;
+    transition: .28s ease; z-index: 100;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 40px; line-height: 1.9; }
+  footer b { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <h1>🏋️ متتبع النادي</h1>
+      <p class="sub"><b>السبت • الاثنين • الأربعاء</b> &nbsp;|&nbsp; سبتمبر 2026 — فبراير 2027</p>
+    </div>
+    <div class="actions">
+      <button class="icon-btn" id="themeBtn" title="تبديل الوضع">🌙</button>
+      <button class="icon-btn" id="exportBtn" title="تصدير نسخة احتياطية">⬇️</button>
+      <button class="icon-btn" id="importBtn" title="استيراد نسخة">⬆️</button>
+      <button class="icon-btn danger" id="resetBtn" title="تصفير كل البيانات">🗑️</button>
+    </div>
+  </header>
+
+  <section class="dash">
+    <div class="card ring-wrap">
+      <div class="ring" id="ring">
+        <div class="ring-inner">
+          <span class="ring-val" id="pctVal">0%</span>
+          <span class="ring-lbl">نسبة الحضور</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="stat-grid">
+        <div class="stat green"><span class="s-ico">✅</span><b id="stDone">0</b><span class="lbl">حضرت</span></div>
+        <div class="stat red"><span class="s-ico">❌</span><b id="stMiss">0</b><span class="lbl">غبت</span></div>
+        <div class="stat"><span class="s-ico">⏳</span><b id="stLeft">0</b><span class="lbl">المتبقي</span></div>
+        <div class="stat"><span class="s-ico">📊</span><b id="stTotal">0</b><span class="lbl">الإجمالي</span></div>
+        <div class="stat"><span class="s-ico">🔥</span><b id="stCur">0</b><span class="lbl">السلسلة الحالية</span></div>
+        <div class="stat"><span class="s-ico">🏆</span><b id="stBest">0</b><span class="lbl">أفضل سلسلة</span></div>
+      </div>
+
+      <div class="card progress-card">
+        <div class="pc-head">
+          <span>التقدم الكلي</span>
+          <b id="progTxt">0 / 0</b>
+        </div>
+        <div class="bar">
+          <div class="seg done" id="segDone" style="width:0%"></div>
+          <div class="seg miss" id="segMiss" style="width:0%"></div>
+        </div>
+        <div class="legend">
+          <span><i class="dot g"></i> حضرت</span>
+          <span><i class="dot r"></i> غبت</span>
+          <span><i class="dot n"></i> لم يُسجّل</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main id="months"></main>
+
+  <footer>
+    اضغط على أي يوم للتبديل: <b>✓ حضرت</b> ← <b>✕ غبت</b> ← بدون تسجيل<br>
+    يُحفظ تلقائيًا في متصفحك · قفل الصفحة وارجع متى شئت وكل شيء في مكانه
+  </footer>
+</div>
+
+<button class="fab" id="fabBtn">📍 أحدث جلسة</button>
+<div id="toast"></div>
+<input type="file" id="fileInput" accept="application/json" hidden>
+
+<script>
+(function () {
+  'use strict';
+
+  const STORAGE_KEY = 'gym-tracker-v2';
+  const THEME_KEY   = 'gym-tracker-theme';
+
+  const AR_DAYS   = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+  /* ================================================================
+     بيانات الجلسات الفعلية (التاريخ بصيغة YYYY-MM-DD + رقم الأسبوع داخل الشهر)
+     ================================================================ */
+  const RAW = [
+    // سبتمبر 2026
+    ['2026-09-21',4],['2026-09-23',4],['2026-09-26',4],
+    ['2026-09-28',5],['2026-09-30',5],
+
+    // أكتوبر 2026
+    ['2026-10-03',1],
+    ['2026-10-05',2],['2026-10-07',2],['2026-10-10',2],
+    ['2026-10-12',3],['2026-10-14',3],['2026-10-17',3],
+    ['2026-10-19',4],['2026-10-21',4],['2026-10-24',4],
+    ['2026-10-26',5],['2026-10-28',5],['2026-10-31',5],
+
+    // نوفمبر 2026
+    ['2026-11-02',2],['2026-11-04',2],['2026-11-07',2],
+    ['2026-11-09',3],['2026-11-11',3],['2026-11-14',3],
+    ['2026-11-16',4],['2026-11-18',4],['2026-11-21',4],
+    ['2026-11-23',5],['2026-11-25',5],['2026-11-28',5],
+    ['2026-11-30',6],
+
+    // ديسمبر 2026
+    ['2026-12-02',1],['2026-12-05',1],
+    ['2026-12-07',2],['2026-12-09',2],['2026-12-12',2],
+    ['2026-12-14',3],['2026-12-16',3],['2026-12-19',3],
+    ['2026-12-21',4],['2026-12-23',4],['2026-12-26',4],
+    ['2026-12-28',5],['2026-12-30',5],
+
+    // يناير 2027
+    ['2027-01-02',1],
+    ['2027-01-04',2],['2027-01-06',2],['2027-01-09',2],
+    ['2027-01-11',3],['2027-01-13',3],['2027-01-16',3],
+    ['2027-01-18',4],['2027-01-20',4],['2027-01-23',4],
+    ['2027-01-25',5],['2027-01-27',5],['2027-01-30',5],
+
+    // فبراير 2027
+    ['2027-02-01',1],['2027-02-03',1],
+    ['2027-02-06',2],['2027-02-08',2],['2027-02-10',2],
+    ['2027-02-13',3],['2027-02-15',3],['2027-02-17',3],
+    ['2027-02-20',4],['2027-02-22',4],['2027-02-24',4],['2027-02-27',4]
+  ];
+
+  /* ============ تحويل البيانات ============ */
+  function parseKey(k) {
+    const p = k.split('-');
+    return new Date(+p[0], +p[1] - 1, +p[2]);
+  }
+  const keyOf = d =>
+    d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+
+  const SESSIONS = RAW.map(([key, week]) => {
+    const d = parseKey(key);
+    return { key, week, date: d };
+  });
+
+  /* ============ تجميع الأشهر والأسابيع ============ */
+  const MONTHS = (function () {
+    const mmap = new Map();
+    SESSIONS.forEach(s => {
+      const d = s.date;
+      const mk = d.getFullYear() + '-' + d.getMonth();
+      if (!mmap.has(mk)) {
+        mmap.set(mk, { key: mk, year: d.getFullYear(), month: d.getMonth(), weeksMap: new Map() });
+      }
+      const m = mmap.get(mk);
+      if (!m.weeksMap.has(s.week)) m.weeksMap.set(s.week, []);
+      m.weeksMap.get(s.week).push(s);
+    });
+
+    return [...mmap.values()].map(m => ({
+      key: m.key, year: m.year, month: m.month,
+      weeks: [...m.weeksMap.entries()]
+        .sort((a, b) => a[0] - b[0])
+        .map(([num, sessions]) => ({ num, sessions }))
+    }));
+  })();
+
+  /* ============ الحالة والتخزين ============ */
+  let state = load();
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      return (obj && typeof obj === 'object' && !Array.isArray(obj)) ? obj : {};
+    } catch (e) { return {}; }
+  }
+
+  let toastTimer;
+  function save(silent) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch (e) { toast('⚠️ تعذّر الحفظ'); return; }
+    if (!silent) toast('تم الحفظ ✓');
+  }
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 1400);
+  }
+
+  /* ============ الوضع الليلي/النهاري ============ */
+  (function initTheme() {
+    const saved = localStorage.getItem(THEME_KEY) || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+    document.getElementById('themeBtn').textContent = saved === 'dark' ? '🌙' : '☀️';
+  })();
+
+  /* ============ الرسم ============ */
+  function render() {
+    const box = document.getElementById('months');
+    let html = '';
+
+    MONTHS.forEach(m => {
+      html += `<section class="month">
+        <div class="month-head">
+          <h2>${AR_MONTHS[m.month]} ${m.year}</h2>
+          <div class="m-prog">
+            <div class="bar small"><div class="seg done" data-mfill="${m.key}" style="width:0%"></div></div>
+            <span class="m-txt" data-mtxt="${m.key}">0/0</span>
+          </div>
+        </div>
+        <div class="weeks">`;
+
+      m.weeks.forEach(w => {
+        html += `<div class="week">
+          <div class="week-head">
+            <span class="wk-title">الأسبوع ${w.num}</span>
+            <span class="wk-stat" data-wstat="${m.key}-${w.num}">0/${w.sessions.length}</span>
+          </div>
+          <div class="days">`;
+
+        w.sessions.forEach(s => {
+          const d = s.date;
+          html += `<button type="button" class="day" data-key="${s.key}">
+            <span class="day-check"></span>
+            <span class="day-name">${AR_DAYS[d.getDay()]}</span>
+            <span class="day-date">${d.getDate()} ${AR_MONTHS[d.getMonth()]}</span>
+          </button>`;
+        });
+
+        html += `</div></div>`;
+      });
+
+      html += `</div></section>`;
+    });
+
+    box.innerHTML = html;
+
+    SESSIONS.forEach(s => paint(s.key));
+
+    const tb = document.querySelector('.day[data-key="' + keyOf(new Date()) + '"]');
+    if (tb) tb.classList.add('today');
+
+    updateStats();
+  }
+
+  function paint(key) {
+    const btn = document.querySelector('.day[data-key="' + key + '"]');
+    if (!btn) return;
+    const st = state[key];
+    btn.classList.toggle('done', st === 'done');
+    btn.classList.toggle('miss', st === 'miss');
+    btn.querySelector('.day-check').textContent =
+      st === 'done' ? '✓' : st === 'miss' ? '✕' : '';
+  }
+
+  function cycle(key) {
+    const cur = state[key];
+    if (!cur) state[key] = 'done';
+    else if (cur === 'done') state[key] = 'miss';
+    else delete state[key];
+
+    save();
+    paint(key);
+    updateStats();
+  }
+
+  /* ============ الإحصائيات ============ */
+  function updateStats() {
+    let done = 0, miss = 0;
+    SESSIONS.forEach(s => {
+      const st = state[s.key];
+      if (st === 'done') done++;
+      else if (st === 'miss') miss++;
+    });
+
+    const total = SESSIONS.length;
+    const left = total - done - miss;
+    const recorded = done + miss;
+    const pct = recorded ? Math.round(done / recorded * 100) : 0;
+
+    document.getElementById('stDone').textContent  = done;
+    document.getElementById('stMiss').textContent  = miss;
+    document.getElementById('stLeft').textContent  = left;
+    document.getElementById('stTotal').textContent = total;
+    document.getElementById('pctVal').textContent  = pct + '%';
+    document.getElementById('progTxt').textContent = done + ' / ' + total;
+
+    document.getElementById('ring').style.setProperty('--p', pct + '%');
+    document.getElementById('segDone').style.width = (total ? done / total * 100 : 0) + '%';
+    document.getElementById('segMiss').style.width = (total ? miss / total * 100 : 0) + '%';
+
+    let running = 0, best = 0;
+    SESSIONS.forEach(s => {
+      const st = state[s.key];
+      if (st === 'done') { running++; if (running > best) best = running; }
+      else if (st === 'miss') { running = 0; }
+    });
+    document.getElementById('stCur').textContent  = running;
+    document.getElementById('stBest').textContent = best;
+
+    // شرائط الأشهر
+    MONTHS.forEach(m => {
+      const all = m.weeks.reduce((acc, w) => acc.concat(w.sessions), []);
+      const d = all.filter(s => state[s.key] === 'done').length;
+      const fill = document.querySelector('[data-mfill="' + m.key + '"]');
+      const txt  = document.querySelector('[data-mtxt="' + m.key + '"]');
+      if (fill) fill.style.width = (all.length ? d / all.length * 100 : 0) + '%';
+      if (txt)  txt.textContent = d + '/' + all.length;
+    });
+
+    // إحصاء الأسابيع
+    MONTHS.forEach(m => {
+      m.weeks.forEach(w => {
+        const el = document.querySelector('[data-wstat="' + m.key + '-' + w.num + '"]');
+        if (!el) return;
+        let d = 0;
+        w.sessions.forEach(s => { if (state[s.key] === 'done') d++; });
+        el.textContent = d + '/' + w.sessions.length;
+        el.classList.toggle('full', d === w.sessions.length);
+      });
+    });
+  }
+
+  /* ============ الأحداث ============ */
+  document.getElementById('months').addEventListener('click', e => {
+    const btn = e.target.closest('.day');
+    if (btn) cycle(btn.dataset.key);
+  });
+
+  document.getElementById('themeBtn').addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem(THEME_KEY, next);
+    document.getElementById('themeBtn').textContent = next === 'dark' ? '🌙' : '☀️';
+  });
+
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'gym-tracker-backup-' + keyOf(new Date()) + '.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast('تم التصدير ✓');
+  });
+
+  const fileInput = document.getElementById('fileInput');
+  document.getElementById('importBtn').addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const data = JSON.parse(r.result);
+        if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error();
+        state = data;
+        save(true);
+        render();
+        toast('تم الاستيراد ✓');
+      } catch (err) { toast('⚠️ ملف غير صالح'); }
+    };
+    r.readAsText(f);
+    e.target.value = '';
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    if (!Object.keys(state).length) { toast('لا يوجد شيء لتصفيره'); return; }
+    if (confirm('هل تريد حذف كل سجلاتك؟ لا يمكن التراجع.')) {
+      state = {};
+      localStorage.removeItem(STORAGE_KEY);
+      render();
+      toast('تم التصفير 🗑️');
+    }
+  });
+
+  document.getElementById('fabBtn').addEventListener('click', () => {
+    const target = SESSIONS.find(s => !state[s.key]) || SESSIONS[SESSIONS.length - 1];
+    const el = document.querySelector('.day[data-key="' + target.key + '"]');
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.remove('flash');
+    void el.offsetWidth;
+    el.classList.add('flash');
+    setTimeout(() => el.classList.remove('flash'), 2900);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
